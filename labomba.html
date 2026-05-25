@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>💣 La Bomba</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #0a0a0a;
+    --red: #cc2200;
+    --red-hot: #ff3300;
+    --amber: #ff8800;
+    --cream: #f5f0e8;
+    --gray: #2a2a2a;
+    --muted: #666;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--black); color: var(--cream); min-height: 100vh; overflow-x: hidden; }
+  .screen { display: none; min-height: 100vh; flex-direction: column; padding: 2rem 1.5rem; }
+  .screen.active { display: flex; }
+  .display { font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.02em; }
+  h1.display { font-size: clamp(52px, 14vw, 80px); line-height: 0.9; color: var(--cream); }
+  h2.display { font-size: 36px; color: var(--cream); margin-bottom: 0.5rem; }
+  p { font-size: 15px; color: #999; line-height: 1.6; }
+  input, textarea {
+    width: 100%; padding: 14px 16px;
+    background: var(--gray); border: 1px solid #333; border-radius: 8px;
+    color: var(--cream); font-family: 'DM Sans', sans-serif; font-size: 16px;
+    outline: none; transition: border-color 0.2s; margin-bottom: 10px;
+  }
+  input:focus, textarea:focus { border-color: var(--amber); }
+  textarea { min-height: 80px; resize: vertical; }
+  .btn {
+    display: block; width: 100%; padding: 16px 20px;
+    font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 0.05em;
+    border: none; border-radius: 8px; cursor: pointer;
+    transition: transform 0.1s, opacity 0.15s; margin-bottom: 10px;
+  }
+  .btn:active { transform: scale(0.97); opacity: 0.85; }
+  .btn-primary { background: var(--red); color: var(--cream); }
+  .btn-secondary { background: var(--gray); color: var(--cream); border: 1px solid #444; }
+  .btn-ghost { background: transparent; color: #666; border: 1px solid #333; font-family: 'DM Sans', sans-serif; font-size: 14px; padding: 10px; }
+  .btn-sm { width: auto; padding: 10px 18px; font-size: 18px; margin: 0; }
+  .player-chip {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--gray); border: 1px solid #444;
+    border-radius: 40px; padding: 8px 14px 8px 16px;
+    font-size: 14px; font-weight: 500; margin: 4px;
+  }
+  .player-chip .remove { background: none; border: none; color: #666; cursor: pointer; font-size: 18px; line-height: 1; padding: 0; }
+  .q-item {
+    background: var(--gray); border-radius: 8px; padding: 12px 14px; margin-bottom: 6px;
+    display: flex; align-items: flex-start; gap: 10px;
+    border-left: 3px solid #333; transition: border-color 0.2s;
+  }
+  .q-item-text { flex: 1; font-size: 14px; color: #ccc; line-height: 1.5; }
+  .q-del { background: none; border: none; color: #555; cursor: pointer; font-size: 18px; flex-shrink: 0; }
+
+  /* MODE SELECTOR */
+  .mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.25rem; }
+  .mode-card {
+    background: var(--gray); border: 1px solid #333; border-radius: 10px;
+    padding: 1rem; text-align: center; cursor: pointer; transition: all 0.2s;
+  }
+  .mode-card.selected { border-color: var(--amber); background: #1a1000; }
+  .mode-card .mode-icon { font-size: 28px; margin-bottom: 6px; }
+  .mode-card .mode-label { font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 0.05em; color: var(--cream); }
+  .mode-card .mode-desc { font-size: 11px; color: #666; margin-top: 3px; line-height: 1.4; }
+
+  /* GAME */
+  #s-game { background: var(--black); align-items: center; justify-content: space-between; position: relative; overflow: hidden; }
+  #s-game::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 50% 60%, rgba(204,34,0,0.08) 0%, transparent 70%); pointer-events: none; }
+  .game-top { width: 100%; display: flex; justify-content: space-between; align-items: center; }
+  .round-badge { font-family: 'Bebas Neue', sans-serif; font-size: 14px; letter-spacing: 0.1em; color: #555; text-transform: uppercase; }
+  .value-badge { font-family: 'Bebas Neue', sans-serif; font-size: 16px; color: var(--amber); letter-spacing: 0.05em; }
+  .bomb-container { position: relative; display: flex; align-items: center; justify-content: center; }
+  .bomb-glow { position: absolute; width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(circle, rgba(204,34,0,0.3) 0%, transparent 70%); animation: glowPulse 1s ease-in-out infinite; }
+  @keyframes glowPulse { 0%,100% { transform: scale(0.9); opacity: 0.6; } 50% { transform: scale(1.1); opacity: 1; } }
+  #bombEmoji { font-size: 120px; line-height: 1; position: relative; z-index: 1; animation: bombShake 1s ease-in-out infinite; user-select: none; }
+  @keyframes bombShake { 0%,100% { transform: rotate(-3deg) scale(1); } 50% { transform: rotate(3deg) scale(1.04); } }
+  #bombEmoji.fast { animation: bombShakeFast 0.25s ease-in-out infinite; }
+  @keyframes bombShakeFast { 0%,100% { transform: rotate(-6deg) scale(1); } 50% { transform: rotate(6deg) scale(1.08); } }
+  #bombEmoji.exploded { animation: none; }
+  .question-card { width: 100%; background: var(--gray); border: 1px solid #333; border-radius: 12px; padding: 1.25rem 1.5rem; }
+  .question-label { font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--red); margin-bottom: 8px; }
+  .question-text { font-size: 18px; font-weight: 500; color: var(--cream); line-height: 1.4; }
+  .starter-line { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 0.05em; color: var(--amber); }
+
+  /* BOOM */
+  #s-boom { background: #100000; align-items: center; justify-content: center; text-align: center; }
+  .boom-title { font-family: 'Bebas Neue', sans-serif; font-size: 80px; line-height: 0.9; color: var(--red-hot); text-shadow: 0 0 40px rgba(255,51,0,0.6); animation: boomPulse 0.4s ease-out; }
+  @keyframes boomPulse { 0% { transform: scale(0.5); opacity: 0; } 60% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
+  .player-select-grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 1rem 0; }
+  .player-pick { padding: 10px 20px; background: var(--gray); border: 1px solid #444; border-radius: 40px; font-size: 15px; font-weight: 500; cursor: pointer; transition: all 0.15s; color: var(--cream); }
+  .player-pick.selected { background: var(--red); border-color: var(--red); }
+
+  /* SCORE */
+  .score-row { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-bottom: 1px solid #1a1a1a; }
+  .score-pos { font-family: 'Bebas Neue', sans-serif; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+  .pos-1 { background: #8B6914; color: #ffd700; }
+  .pos-2 { background: #444; color: #aaa; }
+  .pos-3 { background: #5a3020; color: #cd7f32; }
+  .pos-n { background: #1a1a1a; color: #555; }
+  .score-name { flex: 1; font-size: 16px; font-weight: 500; color: var(--cream); }
+  .score-pts { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--red); }
+  .shot-alert { background: linear-gradient(135deg, #1a0800, #2d1000); border: 2px solid var(--amber); border-radius: 12px; padding: 1.25rem; margin: 0.75rem 0; text-align: center; animation: alertPop 0.3s ease-out; }
+  @keyframes alertPop { 0% { transform: scale(0.9); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+  .shot-emoji { font-size: 36px; margin-bottom: 6px; }
+  .shot-text { font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: var(--amber); line-height: 1.3; }
+  .shot-sub { font-size: 13px; color: #888; margin-top: 6px; }
+
+  /* MISC */
+  .tabs { display: flex; gap: 4px; background: var(--gray); padding: 4px; border-radius: 10px; margin-bottom: 1.25rem; }
+  .tab { flex: 1; padding: 10px; font-size: 13px; font-weight: 500; text-align: center; cursor: pointer; border-radius: 7px; color: #666; transition: all 0.2s; }
+  .tab.active { background: var(--red); color: var(--cream); }
+  .scroll-area { overflow-y: auto; max-height: 38vh; padding-right: 4px; }
+  .scroll-area::-webkit-scrollbar { width: 3px; }
+  .scroll-area::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+  .logo-area { padding-top: 2rem; margin-bottom: 2rem; }
+  .logo-sub { font-size: 13px; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin-top: 4px; }
+  .winner-name { font-family: 'Bebas Neue', sans-serif; font-size: 48px; color: #ffd700; text-shadow: 0 0 30px rgba(255,215,0,0.4); }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  .fade-up { animation: fadeUp 0.4s ease-out both; }
+  body::after { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E"); pointer-events: none; z-index: 9999; opacity: 0.4; }
+  .mt-auto { margin-top: auto; }
+  .flex-row { display: flex; gap: 10px; align-items: center; }
+  .warn { font-size: 13px; color: var(--red); margin-bottom: 8px; display: none; }
+  .section-label { font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #555; margin: 1rem 0 0.5rem; }
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div id="s-home" class="screen active">
+  <div class="logo-area fade-up">
+    <h1 class="display">LA<br>BOMBA</h1>
+    <p class="logo-sub">El juego que explota</p>
+  </div>
+  <div style="flex:1;display:flex;align-items:center;justify-content:center;">
+    <div style="font-size:96px;animation:glowPulse 2s ease-in-out infinite;">💣</div>
+  </div>
+  <div class="fade-up" style="animation-delay:0.15s;">
+    <button class="btn btn-primary" onclick="go('s-setup')">NUEVA PARTIDA</button>
+    <button class="btn btn-secondary" onclick="go('s-ranking')">RANKING</button>
+  </div>
+</div>
+
+<!-- SETUP -->
+<div id="s-setup" class="screen">
+  <div class="flex-row" style="margin-bottom:1.5rem;">
+    <button class="btn btn-ghost btn-sm" onclick="go('s-home')">← Volver</button>
+    <h2 class="display" style="margin:0;">CONFIGURAR</h2>
+  </div>
+  <div class="tabs">
+    <div class="tab active" id="tab-players" onclick="switchTab('players')">Jugadores</div>
+    <div class="tab" id="tab-questions" onclick="switchTab('questions')">Preguntas</div>
+  </div>
+
+  <!-- PLAYERS TAB -->
+  <div id="tab-players-content" style="display:flex;flex-direction:column;">
+    <div class="flex-row">
+      <input id="playerInput" placeholder="Nombre del jugador..." style="margin:0;" onkeydown="if(event.key==='Enter')addPlayer()">
+      <button class="btn btn-primary btn-sm" onclick="addPlayer()">+</button>
+    </div>
+    <p class="warn" id="warn-players">Añade al menos 2 jugadores.</p>
+    <div class="section-label">EN LA MESA</div>
+    <div id="playerChips" style="min-height:44px;"></div>
+    <div class="mt-auto" style="padding-top:1.5rem;">
+      <button class="btn btn-primary" onclick="switchTab('questions')">SIGUIENTE →</button>
+    </div>
+  </div>
+
+  <!-- QUESTIONS TAB -->
+  <div id="tab-questions-content" style="display:none;flex-direction:column;flex:1;">
+    <div class="section-label" style="margin-top:0;">MODO DE PREGUNTAS</div>
+    <div class="mode-grid">
+      <div class="mode-card selected" id="mode-auto" onclick="selectMode('auto')">
+        <div class="mode-icon">🎲</div>
+        <div class="mode-label">Predefinidas</div>
+        <div class="mode-desc">13 preguntas de Carlos listas para usar</div>
+      </div>
+      <div class="mode-card" id="mode-custom" onclick="selectMode('custom')">
+        <div class="mode-icon">✍️</div>
+        <div class="mode-label">Propias</div>
+        <div class="mode-desc">Los jugadores escriben sus preguntas</div>
+      </div>
+    </div>
+
+    <!-- AUTO MODE INFO -->
+    <div id="auto-section">
+      <div class="section-label">PREGUNTAS INCLUIDAS</div>
+      <div class="scroll-area" id="previewList"></div>
+    </div>
+
+    <!-- CUSTOM MODE -->
+    <div id="custom-section" style="display:none;">
+      <textarea id="qInput" placeholder="Escribe una pregunta... (ej: ¿Qué harías si te quedas encerrado a las 3AM?)"></textarea>
+      <div class="flex-row" style="margin-bottom:0.75rem;">
+        <button class="btn btn-primary btn-sm" onclick="addQuestion()" style="flex:1;">AÑADIR</button>
+      </div>
+      <p class="warn" id="warn-questions">Añade al menos 3 preguntas.</p>
+      <div class="section-label">TUS PREGUNTAS (<span id="qCount">0</span>)</div>
+      <div class="scroll-area" id="questionList"></div>
+    </div>
+
+    <div class="mt-auto" style="padding-top:1rem;">
+      <button class="btn btn-primary" onclick="startGame()">💣 ¡EMPEZAR!</button>
+    </div>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="s-game" class="screen">
+  <div class="game-top fade-up">
+    <div>
+      <div class="round-badge">RONDA <span id="roundNum">1</span></div>
+      <div class="starter-line" id="starterLine"></div>
+    </div>
+    <div class="value-badge">💥 <span id="bombValueDisplay">★★★</span></div>
+  </div>
+  <div class="bomb-container">
+    <div class="bomb-glow"></div>
+    <div id="bombEmoji">💣</div>
+  </div>
+  <div class="question-card fade-up">
+    <div class="question-label">PREGUNTA</div>
+    <div class="question-text" id="questionText">—</div>
+  </div>
+  <div style="padding-bottom:1rem;width:100%;">
+    <button class="btn btn-primary" id="startBtn" onclick="armBomb()">START 💣</button>
+  </div>
+</div>
+
+<!-- BOOM -->
+<div id="s-boom" class="screen">
+  <div style="font-size:80px;">💥</div>
+  <div class="boom-title">¡BOOM!</div>
+  <p style="margin:0.5rem 0 1.5rem;font-size:16px;color:#888;">¿Quién tenía el teléfono?</p>
+  <div class="player-select-grid" id="boomPlayerGrid"></div>
+  <p style="font-size:13px;color:#555;margin-bottom:8px;">O escribe el nombre:</p>
+  <input id="loserInput" placeholder="Nombre..." style="text-align:center;max-width:260px;display:block;margin:0 auto 8px;">
+  <p class="warn" id="warn-boom" style="justify-content:center;display:none;">Selecciona o escribe un nombre.</p>
+  <button class="btn btn-primary" style="max-width:280px;margin:1rem auto 0;" onclick="confirmLoser()">CONFIRMAR 💀</button>
+</div>
+
+<!-- SCORE -->
+<div id="s-score" class="screen">
+  <h2 class="display">MARCADOR</h2>
+  <div style="margin-bottom:0.5rem;font-size:13px;color:#555;">Menos puntos = mejor jugador</div>
+  <div id="shotAlerts"></div>
+  <div id="scoreList" class="scroll-area" style="max-height:50vh;"></div>
+  <div class="mt-auto" style="padding-top:1rem;">
+    <button class="btn btn-primary" onclick="nextRound()">SIGUIENTE RONDA →</button>
+    <button class="btn btn-secondary" onclick="endGame()">TERMINAR PARTIDA</button>
+  </div>
+</div>
+
+<!-- RANKING -->
+<div id="s-ranking" class="screen">
+  <div class="flex-row" style="margin-bottom:1.5rem;">
+    <button class="btn btn-ghost btn-sm" onclick="go('s-home')">← Volver</button>
+    <h2 class="display" style="margin:0;">RANKING</h2>
+  </div>
+  <div id="rankingContent" class="scroll-area" style="max-height:80vh;"></div>
+</div>
+
+<!-- END -->
+<div id="s-end" class="screen" style="align-items:center;justify-content:center;text-align:center;">
+  <div style="font-size:64px;margin-bottom:1rem;">🏆</div>
+  <p style="color:#555;margin-bottom:0.25rem;font-size:13px;letter-spacing:0.1em;text-transform:uppercase;">Ganador</p>
+  <div class="winner-name" id="winnerName"></div>
+  <p style="margin:0.5rem 0 2rem;color:#666;">(el que menos explotó)</p>
+  <div id="finalScoreList" style="width:100%;"></div>
+  <div class="mt-auto" style="padding-top:1.5rem;width:100%;">
+    <button class="btn btn-primary" onclick="go('s-home')">NUEVA PARTIDA</button>
+  </div>
+</div>
+
+<script>
+// ── PREGUNTAS PREDEFINIDAS ────────────────────────────────────────────────────
+const PRESET_QUESTIONS = [
+  "¿En qué se parece tu novio/a a un equipo de fútbol?",
+  "Cosas que puedes decir en la cama y también en el trabajo",
+  "Nombre de mujer que suene cachondo",
+  "Nombre de hombre que suene guarro",
+  "Nombre propio con juego de palabras (ejemplo: Kerry Caberga)",
+  "Palabras con tres sílabas que necesitas para pasártelo bien de fiesta",
+  "Capitales de países africanos",
+  "Capitales de países asiáticos",
+  "¿En qué se parece tu novio/a a una moto?",
+  "Cosas que tienen en común un pobre y un millonario",
+  "Cosas que la persona a tu derecha odia",
+  "Palabras con dos sílabas que un hombre necesita para ser feliz",
+  "Palabras que empiezan por M y sirven para insultar a Vinicius"
+];
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let players = [];
+let scores  = {};
+let questions = [];
+let qPool   = [];
+let round   = 0;
+let currentQ = '';
+let bombValue = 1;
+let bombTimeout = null;
+let bombStarted = false;
+let gameMode = 'auto';
+
+// ── AUDIO ─────────────────────────────────────────────────────────────────────
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+let tickTimeout = null;
+
+function getCtx() {
+  if (!audioCtx) audioCtx = new AudioCtx();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+function playTick(fast) {
+  try {
+    const ctx = getCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(fast ? 1200 : 880, ctx.currentTime);
+    gain.gain.setValueAtTime(0.1, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.055);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.055);
+  } catch(e) {}
+}
+
+function playExplosion() {
+  try {
+    const ctx = getCtx();
+    const bufSize = ctx.sampleRate * 0.9;
+    const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i/bufSize, 1.4);
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(1.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.9);
+    const dist = ctx.createWaveShaper();
+    const curve = new Float32Array(256);
+    for (let i = 0; i < 256; i++) { const x = (i*2)/256-1; curve[i] = (Math.PI+200)*x/(Math.PI+200*Math.abs(x)); }
+    dist.curve = curve;
+    src.connect(dist); dist.connect(gain); gain.connect(ctx.destination);
+    src.start();
+    const osc = ctx.createOscillator();
+    const g2 = ctx.createGain();
+    osc.connect(g2); g2.connect(ctx.destination);
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(90, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(18, ctx.currentTime + 0.45);
+    g2.gain.setValueAtTime(1.0, ctx.currentTime);
+    g2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.55);
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.55);
+  } catch(e) {}
+}
+
+function startTicking(totalMs) {
+  stopTicking();
+  const startTime = Date.now();
+  function tick() {
+    const elapsed = Date.now() - startTime;
+    const ratio = elapsed / totalMs;
+    let interval;
+    if (ratio < 0.55) interval = 1000;
+    else if (ratio < 0.75) interval = 650;
+    else if (ratio < 0.9) interval = 350;
+    else interval = 200;
+    const isFast = ratio > 0.72;
+    const bomb = document.getElementById('bombEmoji');
+    if (bomb) bomb.className = isFast ? 'fast' : '';
+    playTick(isFast);
+    tickTimeout = setTimeout(tick, interval);
+  }
+  tickTimeout = setTimeout(tick, 600);
+}
+
+function stopTicking() {
+  if (tickTimeout) { clearTimeout(tickTimeout); tickTimeout = null; }
+  if (bombTimeout) { clearTimeout(bombTimeout); bombTimeout = null; }
+}
+
+// ── NAVIGATION ────────────────────────────────────────────────────────────────
+function go(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (id === 's-ranking') showRanking();
+}
+
+// ── TABS ─────────────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  const pc = document.getElementById('tab-players-content');
+  const qc = document.getElementById('tab-questions-content');
+  pc.style.display = tab === 'players' ? 'flex' : 'none';
+  qc.style.display = tab === 'questions' ? 'flex' : 'none';
+  document.getElementById('tab-players').classList.toggle('active', tab === 'players');
+  document.getElementById('tab-questions').classList.toggle('active', tab === 'questions');
+  if (tab === 'questions') {
+    if (players.length < 2) {
+      document.getElementById('warn-players').style.display = 'block';
+      pc.style.display = 'flex'; qc.style.display = 'none';
+      document.getElementById('tab-players').classList.add('active');
+      document.getElementById('tab-questions').classList.remove('active');
+      return;
+    }
+    document.getElementById('warn-players').style.display = 'none';
+    renderPreview();
+  }
+}
+
+// ── MODE ──────────────────────────────────────────────────────────────────────
+function selectMode(m) {
+  gameMode = m;
+  document.getElementById('mode-auto').classList.toggle('selected', m === 'auto');
+  document.getElementById('mode-custom').classList.toggle('selected', m === 'custom');
+  document.getElementById('auto-section').style.display = m === 'auto' ? 'block' : 'none';
+  document.getElementById('custom-section').style.display = m === 'custom' ? 'flex' : 'none';
+  if (m === 'custom') document.getElementById('custom-section').style.flexDirection = 'column';
+}
+
+function renderPreview() {
+  document.getElementById('previewList').innerHTML = PRESET_QUESTIONS.map((q,i) =>
+    `<div class="q-item"><span style="font-size:12px;color:#555;min-width:20px;">${i+1}.</span><span class="q-item-text">${q}</span></div>`
+  ).join('');
+}
+
+// ── PLAYERS ───────────────────────────────────────────────────────────────────
+function addPlayer() {
+  const inp = document.getElementById('playerInput');
+  const name = inp.value.trim();
+  if (!name || players.includes(name)) { inp.value = ''; return; }
+  players.push(name);
+  scores[name] = 0;
+  inp.value = '';
+  renderChips();
+}
+
+function removePlayer(i) {
+  delete scores[players[i]];
+  players.splice(i, 1);
+  renderChips();
+}
+
+function renderChips() {
+  document.getElementById('playerChips').innerHTML = players.map((p,i) =>
+    `<span class="player-chip">${p}<button class="remove" onclick="removePlayer(${i})">×</button></span>`
+  ).join('');
+}
+
+// ── QUESTIONS ─────────────────────────────────────────────────────────────────
+function addQuestion() {
+  const ta = document.getElementById('qInput');
+  const q = ta.value.trim();
+  if (!q) return;
+  questions.push(q);
+  ta.value = '';
+  renderQuestions();
+}
+
+function removeQuestion(i) {
+  questions.splice(i, 1);
+  renderQuestions();
+}
+
+function renderQuestions() {
+  document.getElementById('qCount').textContent = questions.length;
+  document.getElementById('questionList').innerHTML = questions.map((q,i) =>
+    `<div class="q-item"><span class="q-item-text">${q}</span><button class="q-del" onclick="removeQuestion(${i})">×</button></div>`
+  ).join('');
+}
+
+// ── GAME START ────────────────────────────────────────────────────────────────
+function startGame() {
+  const pool = gameMode === 'auto' ? PRESET_QUESTIONS : questions;
+  if (gameMode === 'custom' && questions.length < 3) {
+    document.getElementById('warn-questions').style.display = 'block';
+    return;
+  }
+  document.getElementById('warn-questions').style.display = 'none';
+  players.forEach(p => scores[p] = 0);
+  round = 0;
+  qPool = shuffle([...pool]);
+  nextRound();
+}
+
+function nextRound() {
+  round++;
+  const pool = gameMode === 'auto' ? PRESET_QUESTIONS : questions;
+  if (!qPool.length) qPool = shuffle([...pool]);
+  currentQ = qPool.pop();
+  bombValue = Math.ceil(Math.random() * 5);
+  bombStarted = false;
+
+  const starter = players[Math.floor(Math.random() * players.length)];
+  const stars = '★'.repeat(bombValue) + '☆'.repeat(5 - bombValue);
+
+  document.getElementById('roundNum').textContent = round;
+  document.getElementById('starterLine').textContent = starter.toUpperCase() + ' EMPIEZA';
+  document.getElementById('bombValueDisplay').textContent = stars;
+  document.getElementById('questionText').textContent = currentQ;
+  document.getElementById('bombEmoji').textContent = '💣';
+  document.getElementById('bombEmoji').className = '';
+  document.getElementById('startBtn').textContent = 'START 💣';
+  document.getElementById('startBtn').disabled = false;
+
+  go('s-game');
+}
+
+function armBomb() {
+  if (bombStarted) return;
+  bombStarted = true;
+  document.getElementById('startBtn').disabled = true;
+  document.getElementById('startBtn').textContent = 'TICK TOCK...';
+  const duration = 15000 + Math.random() * 75000;
+  startTicking(duration);
+  bombTimeout = setTimeout(triggerExplosion, duration);
+}
+
+function triggerExplosion() {
+  stopTicking();
+  playExplosion();
+  const bomb = document.getElementById('bombEmoji');
+  bomb.textContent = '💥';
+  bomb.className = 'exploded';
+  setTimeout(() => {
+    go('s-boom');
+    document.getElementById('loserInput').value = '';
+    document.getElementById('warn-boom').style.display = 'none';
+    document.querySelectorAll('.player-pick').forEach(b => b.classList.remove('selected'));
+    document.getElementById('boomPlayerGrid').innerHTML = players.map(p =>
+      `<button class="player-pick" onclick="selectLoser('${p}', this)">${p}</button>`
+    ).join('');
+  }, 900);
+}
+
+function selectLoser(name, el) {
+  document.querySelectorAll('.player-pick').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('loserInput').value = name;
+}
+
+function confirmLoser() {
+  const name = document.getElementById('loserInput').value.trim();
+  if (!name) { document.getElementById('warn-boom').style.display = 'flex'; return; }
+  if (scores[name] === undefined) scores[name] = 0;
+  scores[name] += bombValue;
+  renderScore(name);
+  go('s-score');
+}
+
+// ── SCORE ─────────────────────────────────────────────────────────────────────
+function renderScore(lastLoser) {
+  const sorted = Object.entries(scores).sort((a,b) => a[1] - b[1]);
+  const posClass = ['pos-1','pos-2','pos-3'];
+
+  // Chupito alerts — solo para el perdedor actual si ha llegado a múltiplo de 5
+  const alerts = [];
+  const s = scores[lastLoser];
+  if (s > 0 && s % 5 === 0) {
+    const shots = s / 5;
+    const glass = '🥃'.repeat(Math.min(shots, 6));
+    const text = shots === 1
+      ? `"${lastLoser}" tiene que tomarse un chupito o pagar una ronda de chupitos a la mesa`
+      : `"${lastLoser}" tiene que tomarse ${shots} chupitos o pagar ${shots} rondas de chupitos a la mesa`;
+    alerts.push({ glass, text, pts: s });
+  }
+
+  document.getElementById('shotAlerts').innerHTML = alerts.map(a => `
+    <div class="shot-alert">
+      <div class="shot-emoji">${a.glass}</div>
+      <div class="shot-text">${a.text.toUpperCase()}</div>
+      <div class="shot-sub">${a.pts} puntos acumulados</div>
+    </div>`).join('');
+
+  document.getElementById('scoreList').innerHTML = sorted.map(([p,pts],i) => `
+    <div class="score-row">
+      <div class="score-pos ${posClass[i] || 'pos-n'}">${i+1}</div>
+      <div class="score-name">${p}${p === lastLoser ? ' 💥' : ''}</div>
+      <div class="score-pts">${pts}</div>
+    </div>`).join('');
+}
+
+// ── END ───────────────────────────────────────────────────────────────────────
+function endGame() {
+  const sorted = Object.entries(scores).sort((a,b) => a[1] - b[1]);
+  const winner = sorted[0][0];
+  const posClass = ['pos-1','pos-2','pos-3'];
+  document.getElementById('winnerName').textContent = winner.toUpperCase();
+  document.getElementById('finalScoreList').innerHTML = sorted.map(([p,s],i) => `
+    <div class="score-row">
+      <div class="score-pos ${posClass[i]||'pos-n'}">${['🥇','🥈','🥉'][i]||i+1}</div>
+      <div class="score-name">${p}</div>
+      <div class="score-pts">${s}</div>
+    </div>`).join('');
+  saveHistory(sorted, round);
+  go('s-end');
+}
+
+// ── RANKING ───────────────────────────────────────────────────────────────────
+function saveHistory(sorted, rounds) {
+  try {
+    const h = JSON.parse(localStorage.getItem('labomba_history') || '[]');
+    h.unshift({ date: new Date().toLocaleDateString('es-ES'), rounds, scores: Object.fromEntries(sorted) });
+    localStorage.setItem('labomba_history', JSON.stringify(h.slice(0,20)));
+  } catch(e) {}
+}
+
+function showRanking() {
+  try {
+    const h = JSON.parse(localStorage.getItem('labomba_history') || '[]');
+    const el = document.getElementById('rankingContent');
+    if (!h.length) { el.innerHTML = '<p style="color:#555;padding:1rem 0;">Aún no hay partidas guardadas.</p>'; return; }
+    el.innerHTML = h.map(g => `
+      <div style="background:var(--gray);border-radius:10px;padding:1rem 1.25rem;margin-bottom:10px;border-left:3px solid var(--red);">
+        <div style="font-size:11px;color:#555;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;">${g.date} · ${g.rounds} RONDAS</div>
+        ${Object.entries(g.scores).map(([p,s],i)=>`
+          <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #1a1a1a;">
+            <span style="font-size:14px;color:#ccc;">${['🥇','🥈','🥉'][i]||''} ${p}</span>
+            <span style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--red);">${s}</span>
+          </div>`).join('')}
+      </div>`).join('');
+  } catch(e) {}
+}
+
+// ── UTILS ─────────────────────────────────────────────────────────────────────
+function shuffle(arr) {
+  for (let i = arr.length-1; i > 0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]] = [arr[j],arr[i]];
+  }
+  return arr;
+}
+</script>
+</body>
+</html>
