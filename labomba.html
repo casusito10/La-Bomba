@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>💣 La Bomba</title>
+<title>💣 Abbombah</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -21,7 +21,7 @@
   .screen { display: none; min-height: 100vh; flex-direction: column; padding: 2rem 1.5rem; }
   .screen.active { display: flex; }
   .display { font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.02em; }
-  h1.display { font-size: clamp(52px, 14vw, 80px); line-height: 0.9; color: var(--cream); }
+  h1.display { font-size: clamp(48px, 13vw, 76px); line-height: 0.9; color: var(--cream); }
   h2.display { font-size: 36px; color: var(--cream); margin-bottom: 0.5rem; }
   p { font-size: 15px; color: #999; line-height: 1.6; }
   input, textarea {
@@ -43,6 +43,8 @@
   .btn-secondary { background: var(--gray); color: var(--cream); border: 1px solid #444; }
   .btn-ghost { background: transparent; color: #666; border: 1px solid #333; font-family: 'DM Sans', sans-serif; font-size: 14px; padding: 10px; }
   .btn-sm { width: auto; padding: 10px 18px; font-size: 18px; margin: 0; }
+  .btn-ok { background: #1a6e1a; color: var(--cream); }
+  .btn-ko { background: #6e1a1a; color: var(--cream); }
   .player-chip {
     display: inline-flex; align-items: center; gap: 8px;
     background: var(--gray); border: 1px solid #444;
@@ -57,8 +59,6 @@
   }
   .q-item-text { flex: 1; font-size: 14px; color: #ccc; line-height: 1.5; }
   .q-del { background: none; border: none; color: #555; cursor: pointer; font-size: 18px; flex-shrink: 0; }
-
-  /* MODE SELECTOR */
   .mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.25rem; }
   .mode-card {
     background: var(--gray); border: 1px solid #333; border-radius: 10px;
@@ -68,8 +68,6 @@
   .mode-card .mode-icon { font-size: 28px; margin-bottom: 6px; }
   .mode-card .mode-label { font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 0.05em; color: var(--cream); }
   .mode-card .mode-desc { font-size: 11px; color: #666; margin-top: 3px; line-height: 1.4; }
-
-  /* GAME */
   #s-game { background: var(--black); align-items: center; justify-content: space-between; position: relative; overflow: hidden; }
   #s-game::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 50% 60%, rgba(204,34,0,0.08) 0%, transparent 70%); pointer-events: none; }
   .game-top { width: 100%; display: flex; justify-content: space-between; align-items: center; }
@@ -78,7 +76,7 @@
   .bomb-container { position: relative; display: flex; align-items: center; justify-content: center; }
   .bomb-glow { position: absolute; width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(circle, rgba(204,34,0,0.3) 0%, transparent 70%); animation: glowPulse 1s ease-in-out infinite; }
   @keyframes glowPulse { 0%,100% { transform: scale(0.9); opacity: 0.6; } 50% { transform: scale(1.1); opacity: 1; } }
-  #bombEmoji { font-size: 120px; line-height: 1; position: relative; z-index: 1; animation: bombShake 1s ease-in-out infinite; user-select: none; }
+  #bombEmoji { font-size: 110px; line-height: 1; position: relative; z-index: 1; animation: bombShake 1s ease-in-out infinite; user-select: none; }
   @keyframes bombShake { 0%,100% { transform: rotate(-3deg) scale(1); } 50% { transform: rotate(3deg) scale(1.04); } }
   #bombEmoji.fast { animation: bombShakeFast 0.25s ease-in-out infinite; }
   @keyframes bombShakeFast { 0%,100% { transform: rotate(-6deg) scale(1); } 50% { transform: rotate(6deg) scale(1.08); } }
@@ -86,17 +84,13 @@
   .question-card { width: 100%; background: var(--gray); border: 1px solid #333; border-radius: 12px; padding: 1.25rem 1.5rem; }
   .question-label { font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--red); margin-bottom: 8px; }
   .question-text { font-size: 18px; font-weight: 500; color: var(--cream); line-height: 1.4; }
-  .starter-line { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 0.05em; color: var(--amber); }
-
-  /* BOOM */
+  .starter-line { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 0.05em; color: var(--amber); }
   #s-boom { background: #100000; align-items: center; justify-content: center; text-align: center; }
   .boom-title { font-family: 'Bebas Neue', sans-serif; font-size: 80px; line-height: 0.9; color: var(--red-hot); text-shadow: 0 0 40px rgba(255,51,0,0.6); animation: boomPulse 0.4s ease-out; }
   @keyframes boomPulse { 0% { transform: scale(0.5); opacity: 0; } 60% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
   .player-select-grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 1rem 0; }
   .player-pick { padding: 10px 20px; background: var(--gray); border: 1px solid #444; border-radius: 40px; font-size: 15px; font-weight: 500; cursor: pointer; transition: all 0.15s; color: var(--cream); }
   .player-pick.selected { background: var(--red); border-color: var(--red); }
-
-  /* SCORE */
   .score-row { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-bottom: 1px solid #1a1a1a; }
   .score-pos { font-family: 'Bebas Neue', sans-serif; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
   .pos-1 { background: #8B6914; color: #ffd700; }
@@ -110,15 +104,13 @@
   .shot-emoji { font-size: 36px; margin-bottom: 6px; }
   .shot-text { font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: var(--amber); line-height: 1.3; }
   .shot-sub { font-size: 13px; color: #888; margin-top: 6px; }
-
-  /* MISC */
   .tabs { display: flex; gap: 4px; background: var(--gray); padding: 4px; border-radius: 10px; margin-bottom: 1.25rem; }
   .tab { flex: 1; padding: 10px; font-size: 13px; font-weight: 500; text-align: center; cursor: pointer; border-radius: 7px; color: #666; transition: all 0.2s; }
   .tab.active { background: var(--red); color: var(--cream); }
   .scroll-area { overflow-y: auto; max-height: 38vh; padding-right: 4px; }
   .scroll-area::-webkit-scrollbar { width: 3px; }
   .scroll-area::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
-  .logo-area { padding-top: 2rem; margin-bottom: 2rem; }
+  .logo-area { padding-top: 1rem; margin-bottom: 0.5rem; }
   .logo-sub { font-size: 13px; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin-top: 4px; }
   .winner-name { font-family: 'Bebas Neue', sans-serif; font-size: 48px; color: #ffd700; text-shadow: 0 0 30px rgba(255,215,0,0.4); }
   @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
@@ -128,6 +120,36 @@
   .flex-row { display: flex; gap: 10px; align-items: center; }
   .warn { font-size: 13px; color: var(--red); margin-bottom: 8px; display: none; }
   .section-label { font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #555; margin: 1rem 0 0.5rem; }
+
+  /* PASS SCREEN */
+  #s-pass { background: var(--black); align-items: center; justify-content: center; text-align: center; }
+  .pass-name { font-family: 'Bebas Neue', sans-serif; font-size: 52px; color: var(--amber); line-height: 1; margin-bottom: 0.25rem; }
+  .pass-label { font-size: 14px; color: #666; margin-bottom: 2rem; letter-spacing: 0.08em; text-transform: uppercase; }
+  .pass-emoji { font-size: 64px; margin-bottom: 1rem; }
+  .pass-buttons { display: flex; gap: 12px; width: 100%; margin-top: 1rem; }
+  .pass-buttons .btn { flex: 1; margin: 0; font-size: 20px; }
+
+  /* LETTER MODE */
+  .letter-display {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 100px; color: var(--red-hot);
+    text-shadow: 0 0 30px rgba(255,51,0,0.5);
+    line-height: 1; text-align: center;
+    animation: letterPop 0.3s ease-out;
+  }
+  @keyframes letterPop { 0% { transform: scale(0.5); opacity:0; } 70% { transform: scale(1.15); } 100% { transform: scale(1); opacity:1; } }
+  .letter-hint { font-size: 14px; color: #666; text-align: center; margin-top: 0.5rem; }
+
+  /* DIFF BADGE */
+  .diff-badge {
+    display: inline-block; padding: 3px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    background: #2a1500; color: var(--amber); border: 1px solid #5a3500;
+    margin-left: 8px; vertical-align: middle;
+  }
+
+  /* HOME SVG */
+  .home-svg-wrap { flex: 1; display: flex; align-items: center; justify-content: center; }
 </style>
 </head>
 <body>
@@ -135,11 +157,80 @@
 <!-- HOME -->
 <div id="s-home" class="screen active">
   <div class="logo-area fade-up">
-    <h1 class="display">LA<br>BOMBA</h1>
+    <h1 class="display">ABBOMBAH</h1>
     <p class="logo-sub">El juego que explota</p>
   </div>
-  <div style="flex:1;display:flex;align-items:center;justify-content:center;">
-    <div style="font-size:96px;animation:glowPulse 2s ease-in-out infinite;">💣</div>
+  <div class="home-svg-wrap">
+    <svg viewBox="0 0 320 200" width="320" height="200" xmlns="http://www.w3.org/2000/svg">
+      <!-- Person LEFT -->
+      <g id="personL">
+        <!-- body -->
+        <ellipse cx="60" cy="145" rx="22" ry="30" fill="#5C3317"/>
+        <!-- head -->
+        <circle cx="60" cy="100" r="18" fill="#7B4A22"/>
+        <!-- turban -->
+        <ellipse cx="60" cy="88" rx="20" ry="9" fill="#e8e4d8"/>
+        <path d="M40 88 Q60 75 80 88" fill="none" stroke="#e8e4d8" stroke-width="8" stroke-linecap="round"/>
+        <ellipse cx="60" cy="86" rx="13" ry="5" fill="#f5f0e8"/>
+        <!-- arm right (holding/throwing) -->
+        <line x1="82" y1="130" x2="115" y2="118" stroke="#7B4A22" stroke-width="8" stroke-linecap="round"/>
+        <!-- arm left -->
+        <line x1="38" y1="130" x2="20" y2="150" stroke="#7B4A22" stroke-width="8" stroke-linecap="round"/>
+        <!-- legs -->
+        <line x1="50" y1="170" x2="44" y2="195" stroke="#5C3317" stroke-width="7" stroke-linecap="round"/>
+        <line x1="70" y1="170" x2="76" y2="195" stroke="#5C3317" stroke-width="7" stroke-linecap="round"/>
+      </g>
+
+      <!-- BOMB in middle, animated -->
+      <g id="bombG">
+        <text id="bombTxt" x="160" y="125" text-anchor="middle" font-size="36">💣</text>
+      </g>
+
+      <!-- Person RIGHT -->
+      <g id="personR">
+        <!-- body -->
+        <ellipse cx="260" cy="145" rx="22" ry="30" fill="#5C3317"/>
+        <!-- head -->
+        <circle cx="260" cy="100" r="18" fill="#7B4A22"/>
+        <!-- turban -->
+        <ellipse cx="260" cy="88" rx="20" ry="9" fill="#e8e4d8"/>
+        <path d="M240 88 Q260 75 280 88" fill="none" stroke="#e8e4d8" stroke-width="8" stroke-linecap="round"/>
+        <ellipse cx="260" cy="86" rx="13" ry="5" fill="#f5f0e8"/>
+        <!-- arm left (receiving) -->
+        <line x1="238" y1="130" x2="205" y2="118" stroke="#7B4A22" stroke-width="8" stroke-linecap="round"/>
+        <!-- arm right -->
+        <line x1="282" y1="130" x2="300" y2="150" stroke="#7B4A22" stroke-width="8" stroke-linecap="round"/>
+        <!-- legs -->
+        <line x1="250" y1="170" x2="244" y2="195" stroke="#5C3317" stroke-width="7" stroke-linecap="round"/>
+        <line x1="270" y1="170" x2="276" y2="195" stroke="#5C3317" stroke-width="7" stroke-linecap="round"/>
+      </g>
+
+      <!-- sweat drops -->
+      <g id="sweatL" opacity="0">
+        <text x="90" y="105" font-size="14">💧</text>
+      </g>
+      <g id="sweatR" opacity="0">
+        <text x="220" y="105" font-size="14">💧</text>
+      </g>
+
+      <style>
+        @keyframes bombPass {
+          0%   { transform: translate(-55px, -5px); }
+          50%  { transform: translate(0px, -20px); }
+          100% { transform: translate(55px, -5px); }
+        }
+        @keyframes bombPassBack {
+          0%   { transform: translate(55px, -5px); }
+          50%  { transform: translate(0px, -20px); }
+          100% { transform: translate(-55px, -5px); }
+        }
+        #bombG { animation: bombPass 1.2s ease-in-out infinite alternate; }
+        @keyframes sweatLAnim { 0%,45% { opacity:0; } 50%,100% { opacity:1; } }
+        @keyframes sweatRAnim { 0%,95% { opacity:1; } 50%,55% { opacity:0; } }
+        #sweatL { animation: sweatLAnim 1.2s ease-in-out infinite alternate; }
+        #sweatR { animation: sweatRAnim 1.2s ease-in-out infinite alternate; }
+      </style>
+    </svg>
   </div>
   <div class="fade-up" style="animation-delay:0.15s;">
     <button class="btn btn-primary" onclick="go('s-setup')">NUEVA PARTIDA</button>
@@ -179,30 +270,49 @@
       <div class="mode-card selected" id="mode-auto" onclick="selectMode('auto')">
         <div class="mode-icon">🎲</div>
         <div class="mode-label">Predefinidas</div>
-        <div class="mode-desc">13 preguntas de Carlos listas para usar</div>
+        <div class="mode-desc">15 preguntas listas</div>
       </div>
       <div class="mode-card" id="mode-custom" onclick="selectMode('custom')">
         <div class="mode-icon">✍️</div>
         <div class="mode-label">Propias</div>
-        <div class="mode-desc">Los jugadores escriben sus preguntas</div>
+        <div class="mode-desc">Escribís vosotros</div>
+      </div>
+    </div>
+
+    <!-- DIFFICULTY -->
+    <div class="section-label">DIFICULTAD</div>
+    <div class="mode-grid" style="margin-bottom:1rem;">
+      <div class="mode-card selected" id="diff-normal" onclick="selectDiff('normal')">
+        <div class="mode-icon">😊</div>
+        <div class="mode-label">Normal</div>
+        <div class="mode-desc">Solo preguntas</div>
+      </div>
+      <div class="mode-card" id="diff-hard" onclick="selectDiff('hard')">
+        <div class="mode-icon">🔥</div>
+        <div class="mode-label">Difícil</div>
+        <div class="mode-desc">Pregunta + letra aleatoria</div>
       </div>
     </div>
 
     <!-- AUTO MODE INFO -->
     <div id="auto-section">
-      <div class="section-label">PREGUNTAS INCLUIDAS</div>
-      <div class="scroll-area" id="previewList"></div>
+      <div class="section-label">PREGUNTAS: <span id="autoQCount">15</span> CARGADAS</div>
+      <p style="font-size:13px; color:#555;">Las preguntas son sorpresa — nadie las verá hasta que explote 😏</p>
     </div>
 
     <!-- CUSTOM MODE -->
-    <div id="custom-section" style="display:none;">
-      <textarea id="qInput" placeholder="Escribe una pregunta... (ej: ¿Qué harías si te quedas encerrado a las 3AM?)"></textarea>
+    <div id="custom-section" style="display:none;flex-direction:column;">
+      <textarea id="qInput" placeholder="Escribe una pregunta abierta..."></textarea>
       <div class="flex-row" style="margin-bottom:0.75rem;">
         <button class="btn btn-primary btn-sm" onclick="addQuestion()" style="flex:1;">AÑADIR</button>
       </div>
       <p class="warn" id="warn-questions">Añade al menos 3 preguntas.</p>
-      <div class="section-label">TUS PREGUNTAS (<span id="qCount">0</span>)</div>
-      <div class="scroll-area" id="questionList"></div>
+      <div class="section-label" style="display:flex;align-items:center;justify-content:space-between;">
+        <span>PREGUNTAS AÑADIDAS: <span id="qCount">0</span></span>
+        <button onclick="toggleQuestionList()" id="toggleQBtn" style="background:none;border:1px solid #444;border-radius:6px;color:#666;font-size:12px;padding:4px 10px;cursor:pointer;width:auto;margin:0;">ver</button>
+      </div>
+      <p style="font-size:13px; color:#555; margin-bottom:0.5rem;">Ocultas por defecto — sorpresa para los jugadores 😏</p>
+      <div class="scroll-area" id="questionList" style="display:none;max-height:30vh;"></div>
     </div>
 
     <div class="mt-auto" style="padding-top:1rem;">
@@ -225,11 +335,40 @@
     <div id="bombEmoji">💣</div>
   </div>
   <div class="question-card fade-up">
-    <div class="question-label">PREGUNTA</div>
+    <div class="question-label">PREGUNTA <span id="diffBadge" class="diff-badge" style="display:none;">DIFÍCIL 🔥</span></div>
     <div class="question-text" id="questionText">—</div>
+    <div id="letterSection" style="display:none; margin-top:1rem; padding-top:1rem; border-top:1px solid #3a3a3a;">
+      <div style="font-size:11px; font-weight:600; letter-spacing:0.12em; text-transform:uppercase; color:var(--amber); margin-bottom:4px;">LETRA</div>
+      <div class="letter-display" id="letterDisplay">A</div>
+      <div class="letter-hint">Las respuestas deben empezar por esta letra</div>
+    </div>
   </div>
   <div style="padding-bottom:1rem;width:100%;">
+    <button class="btn btn-secondary" id="skipBtn" onclick="skipQuestion()" style="font-family:'DM Sans',sans-serif;font-size:15px;padding:10px;">↩ Saltar pregunta</button>
     <button class="btn btn-primary" id="startBtn" onclick="armBomb()">START 💣</button>
+    <button class="btn btn-secondary" id="passBtn" onclick="showPassScreen()" style="display:none;">📱 PASAR AL SIGUIENTE</button>
+  </div>
+</div>
+
+<!-- PASS SCREEN -->
+<div id="s-pass" class="screen">
+  <div style="width:100%;">
+    <div style="font-size:48px; margin-bottom:0.5rem;">📱</div>
+    <p style="color:#555; font-size:13px; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:0.25rem;">Pasa el móvil a</p>
+    <div class="pass-name" id="passToName">JUAN</div>
+    <p style="color:#666; font-size:13px; margin-bottom:0.5rem;">¿Aceptas la respuesta de <span id="prevPlayerName" style="color:var(--amber);"></span>?</p>
+    <div id="passLetterSection" style="display:none; background:#1a1000; border:1px solid #5a3500; border-radius:8px; padding:0.75rem; margin-bottom:1.5rem; text-align:center;">
+      <div style="font-size:11px; font-weight:600; letter-spacing:0.12em; text-transform:uppercase; color:var(--amber); margin-bottom:4px;">NUEVA LETRA</div>
+      <div class="letter-display" id="passLetterDisplay" style="font-size:64px;">A</div>
+    </div>
+    <div id="passLetterSpacer" style="margin-bottom:1.5rem;"></div>
+    <div class="pass-buttons">
+      <button class="btn btn-ko" onclick="passKO()">❌ KO</button>
+      <button class="btn btn-ok" onclick="passOK()">✅ OK</button>
+    </div>
+    <div style="margin-top:1rem;">
+      <button class="btn btn-ghost" onclick="endRoundEarly()">💥 La bomba explotó</button>
+    </div>
   </div>
 </div>
 
@@ -293,7 +432,16 @@ const PRESET_QUESTIONS = [
   "Cosas que tienen en común un pobre y un millonario",
   "Cosas que la persona a tu derecha odia",
   "Palabras con dos sílabas que un hombre necesita para ser feliz",
-  "Palabras que empiezan por M y sirven para insultar a Vinicius"
+  "Palabras que empiezan por M y sirven para insultar a Vinicius",
+  "¿En qué se parece una cerveza a una mujer?",
+  "Cosas más negras que Koulibaly"
+];
+
+// Letras con pesos (más comunes = más probabilidad)
+const LETTER_POOL = [
+  'A','A','A','A','E','E','E','E','O','O','O','S','S','S',
+  'N','N','R','R','L','L','D','D','C','C','T','T','M','M',
+  'P','P','B','G','H','F','V','J','Z','K','Ñ','CH'
 ];
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
@@ -307,6 +455,11 @@ let bombValue = 1;
 let bombTimeout = null;
 let bombStarted = false;
 let gameMode = 'auto';
+let diffMode = 'normal';
+let currentLetter = '';
+let passQueue = [];
+let currentPassIdx = 0;
+let koPlayer = null;
 
 // ── AUDIO ─────────────────────────────────────────────────────────────────────
 const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -404,20 +557,15 @@ function switchTab(tab) {
   qc.style.display = tab === 'questions' ? 'flex' : 'none';
   document.getElementById('tab-players').classList.toggle('active', tab === 'players');
   document.getElementById('tab-questions').classList.toggle('active', tab === 'questions');
-  if (tab === 'questions') {
-    if (players.length < 2) {
-      document.getElementById('warn-players').style.display = 'block';
-      pc.style.display = 'flex'; qc.style.display = 'none';
-      document.getElementById('tab-players').classList.add('active');
-      document.getElementById('tab-questions').classList.remove('active');
-      return;
-    }
-    document.getElementById('warn-players').style.display = 'none';
-    renderPreview();
+  if (tab === 'questions' && players.length < 2) {
+    document.getElementById('warn-players').style.display = 'block';
+    pc.style.display = 'flex'; qc.style.display = 'none';
+    document.getElementById('tab-players').classList.add('active');
+    document.getElementById('tab-questions').classList.remove('active');
   }
 }
 
-// ── MODE ──────────────────────────────────────────────────────────────────────
+// ── MODE & DIFF ────────────────────────────────────────────────────────────────
 function selectMode(m) {
   gameMode = m;
   document.getElementById('mode-auto').classList.toggle('selected', m === 'auto');
@@ -427,10 +575,14 @@ function selectMode(m) {
   if (m === 'custom') document.getElementById('custom-section').style.flexDirection = 'column';
 }
 
-function renderPreview() {
-  document.getElementById('previewList').innerHTML = PRESET_QUESTIONS.map((q,i) =>
-    `<div class="q-item"><span style="font-size:12px;color:#555;min-width:20px;">${i+1}.</span><span class="q-item-text">${q}</span></div>`
-  ).join('');
+function selectDiff(d) {
+  diffMode = d;
+  document.getElementById('diff-normal').classList.toggle('selected', d === 'normal');
+  document.getElementById('diff-hard').classList.toggle('selected', d === 'hard');
+}
+
+function randomLetter() {
+  return LETTER_POOL[Math.floor(Math.random() * LETTER_POOL.length)];
 }
 
 // ── PLAYERS ───────────────────────────────────────────────────────────────────
@@ -473,9 +625,22 @@ function removeQuestion(i) {
 
 function renderQuestions() {
   document.getElementById('qCount').textContent = questions.length;
-  document.getElementById('questionList').innerHTML = questions.map((q,i) =>
+  const list = document.getElementById('questionList');
+  list.innerHTML = questions.map((q,i) =>
     `<div class="q-item"><span class="q-item-text">${q}</span><button class="q-del" onclick="removeQuestion(${i})">×</button></div>`
   ).join('');
+}
+
+function toggleQuestionList() {
+  const list = document.getElementById('questionList');
+  const btn = document.getElementById('toggleQBtn');
+  if (list.style.display === 'none') {
+    list.style.display = 'block';
+    btn.textContent = 'ocultar';
+  } else {
+    list.style.display = 'none';
+    btn.textContent = 'ver';
+  }
 }
 
 // ── GAME START ────────────────────────────────────────────────────────────────
@@ -485,7 +650,6 @@ function startGame() {
     document.getElementById('warn-questions').style.display = 'block';
     return;
   }
-  document.getElementById('warn-questions').style.display = 'none';
   players.forEach(p => scores[p] = 0);
   round = 0;
   qPool = shuffle([...pool]);
@@ -499,10 +663,21 @@ function nextRound() {
   currentQ = qPool.pop();
   bombValue = Math.ceil(Math.random() * 5);
   bombStarted = false;
+  koPlayer = null;
 
-  const starter = players[Math.floor(Math.random() * players.length)];
+  // Random starter
+  const starterIdx = Math.floor(Math.random() * players.length);
+  const starter = players[starterIdx];
+
+  // Build pass queue starting from starter, random order of others
+  const others = shuffle(players.filter(p => p !== starter));
+  passQueue = [starter, ...others];
+  currentPassIdx = 0;
+
+  // Letter for hard mode
+  currentLetter = diffMode === 'hard' ? randomLetter() : '';
+
   const stars = '★'.repeat(bombValue) + '☆'.repeat(5 - bombValue);
-
   document.getElementById('roundNum').textContent = round;
   document.getElementById('starterLine').textContent = starter.toUpperCase() + ' EMPIEZA';
   document.getElementById('bombValueDisplay').textContent = stars;
@@ -510,19 +685,104 @@ function nextRound() {
   document.getElementById('bombEmoji').textContent = '💣';
   document.getElementById('bombEmoji').className = '';
   document.getElementById('startBtn').textContent = 'START 💣';
+  document.getElementById('startBtn').style.display = 'block';
   document.getElementById('startBtn').disabled = false;
+  document.getElementById('passBtn').style.display = 'none';
+  document.getElementById('skipBtn').style.display = 'block';
+  prevPlayerIdx = 0;
+  nextPlayerIdx = 0;
+
+  // Diff badge & letter
+  const badge = document.getElementById('diffBadge');
+  const letterSec = document.getElementById('letterSection');
+  if (diffMode === 'hard') {
+    badge.style.display = 'inline-block';
+    letterSec.style.display = 'block';
+    document.getElementById('letterDisplay').textContent = currentLetter;
+  } else {
+    badge.style.display = 'none';
+    letterSec.style.display = 'none';
+  }
 
   go('s-game');
+}
+
+function skipQuestion() {
+  const pool = gameMode === 'auto' ? PRESET_QUESTIONS : questions;
+  if (!qPool.length) qPool = shuffle([...pool]);
+  currentQ = qPool.pop();
+  document.getElementById('questionText').textContent = currentQ;
+  if (diffMode === 'hard') {
+    currentLetter = randomLetter();
+    document.getElementById('letterDisplay').textContent = currentLetter;
+  }
 }
 
 function armBomb() {
   if (bombStarted) return;
   bombStarted = true;
-  document.getElementById('startBtn').disabled = true;
-  document.getElementById('startBtn').textContent = 'TICK TOCK...';
+  document.getElementById('startBtn').style.display = 'none';
+  document.getElementById('skipBtn').style.display = 'none';
+  document.getElementById('passBtn').style.display = 'block';
   const duration = 15000 + Math.random() * 75000;
   startTicking(duration);
   bombTimeout = setTimeout(triggerExplosion, duration);
+}
+
+// ── PASS SYSTEM ───────────────────────────────────────────────────────────────
+let prevPlayerIdx = 0;
+let nextPlayerIdx = 0;
+let prevLetter = '';
+
+function showPassScreen() {
+  prevPlayerIdx = currentPassIdx;
+  prevLetter = currentLetter; // save letter before changing
+  // Pick a random next player different from current
+  const others = players.filter((_, i) => i !== currentPassIdx);
+  const nextName = others[Math.floor(Math.random() * others.length)];
+  nextPlayerIdx = players.indexOf(nextName);
+
+  document.getElementById('passToName').textContent = players[nextPlayerIdx].toUpperCase();
+  document.getElementById('prevPlayerName').textContent = players[prevPlayerIdx];
+
+  // Change letter in hard mode
+  if (diffMode === 'hard') {
+    currentLetter = randomLetter();
+    document.getElementById('passLetterDisplay').textContent = currentLetter;
+    document.getElementById('passLetterSection').style.display = 'block';
+    document.getElementById('passLetterSpacer').style.display = 'none';
+    // Also update main game screen letter for when they return
+    document.getElementById('letterDisplay').textContent = currentLetter;
+  } else {
+    document.getElementById('passLetterSection').style.display = 'none';
+    document.getElementById('passLetterSpacer').style.display = 'block';
+  }
+
+  go('s-pass');
+}
+
+function passOK() {
+  // Move to the new player
+  currentPassIdx = nextPlayerIdx;
+  go('s-game');
+}
+
+function passKO() {
+  // KO: go back to previous player with their SAME letter
+  koPlayer = players[nextPlayerIdx];
+  currentPassIdx = prevPlayerIdx;
+  // Restore the letter the previous player had
+  currentLetter = prevLetter;
+  if (diffMode === 'hard') {
+    document.getElementById('letterDisplay').textContent = currentLetter;
+  }
+  go('s-game');
+}
+
+function endRoundEarly() {
+  stopTicking();
+  playExplosion();
+  showBoom();
 }
 
 function triggerExplosion() {
@@ -531,15 +791,17 @@ function triggerExplosion() {
   const bomb = document.getElementById('bombEmoji');
   bomb.textContent = '💥';
   bomb.className = 'exploded';
-  setTimeout(() => {
-    go('s-boom');
-    document.getElementById('loserInput').value = '';
-    document.getElementById('warn-boom').style.display = 'none';
-    document.querySelectorAll('.player-pick').forEach(b => b.classList.remove('selected'));
-    document.getElementById('boomPlayerGrid').innerHTML = players.map(p =>
-      `<button class="player-pick" onclick="selectLoser('${p}', this)">${p}</button>`
-    ).join('');
-  }, 900);
+  setTimeout(() => showBoom(), 900);
+}
+
+function showBoom() {
+  go('s-boom');
+  document.getElementById('loserInput').value = '';
+  document.getElementById('warn-boom').style.display = 'none';
+  document.querySelectorAll('.player-pick').forEach(b => b.classList.remove('selected'));
+  document.getElementById('boomPlayerGrid').innerHTML = players.map(p =>
+    `<button class="player-pick" onclick="selectLoser('${p}', this)">${p}</button>`
+  ).join('');
 }
 
 function selectLoser(name, el) {
@@ -561,10 +823,8 @@ function confirmLoser() {
 function renderScore(lastLoser) {
   const sorted = Object.entries(scores).sort((a,b) => a[1] - b[1]);
   const posClass = ['pos-1','pos-2','pos-3'];
-
-  // Chupito alerts — solo para el perdedor actual si ha llegado a múltiplo de 5
-  const alerts = [];
   const s = scores[lastLoser];
+  const alerts = [];
   if (s > 0 && s % 5 === 0) {
     const shots = s / 5;
     const glass = '🥃'.repeat(Math.min(shots, 6));
@@ -573,14 +833,12 @@ function renderScore(lastLoser) {
       : `"${lastLoser}" tiene que tomarse ${shots} chupitos o pagar ${shots} rondas de chupitos a la mesa`;
     alerts.push({ glass, text, pts: s });
   }
-
   document.getElementById('shotAlerts').innerHTML = alerts.map(a => `
     <div class="shot-alert">
       <div class="shot-emoji">${a.glass}</div>
       <div class="shot-text">${a.text.toUpperCase()}</div>
       <div class="shot-sub">${a.pts} puntos acumulados</div>
     </div>`).join('');
-
   document.getElementById('scoreList').innerHTML = sorted.map(([p,pts],i) => `
     <div class="score-row">
       <div class="score-pos ${posClass[i] || 'pos-n'}">${i+1}</div>
@@ -608,15 +866,15 @@ function endGame() {
 // ── RANKING ───────────────────────────────────────────────────────────────────
 function saveHistory(sorted, rounds) {
   try {
-    const h = JSON.parse(localStorage.getItem('labomba_history') || '[]');
+    const h = JSON.parse(localStorage.getItem('abbombah_history') || '[]');
     h.unshift({ date: new Date().toLocaleDateString('es-ES'), rounds, scores: Object.fromEntries(sorted) });
-    localStorage.setItem('labomba_history', JSON.stringify(h.slice(0,20)));
+    localStorage.setItem('abbombah_history', JSON.stringify(h.slice(0,20)));
   } catch(e) {}
 }
 
 function showRanking() {
   try {
-    const h = JSON.parse(localStorage.getItem('labomba_history') || '[]');
+    const h = JSON.parse(localStorage.getItem('abbombah_history') || '[]');
     const el = document.getElementById('rankingContent');
     if (!h.length) { el.innerHTML = '<p style="color:#555;padding:1rem 0;">Aún no hay partidas guardadas.</p>'; return; }
     el.innerHTML = h.map(g => `
